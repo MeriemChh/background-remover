@@ -188,6 +188,35 @@
   display: block;
 }
 
+.landing-showcase-image-wrap {
+  position: relative;
+  min-height: 240px;
+  background: #0b0b0b;
+}
+
+.landing-image-loader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+}
+
+.landing-image-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #f0f0f0;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .landing-footer-note {
   color: #8f8f8f;
   font-size: 0.86rem;

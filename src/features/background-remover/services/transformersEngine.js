@@ -24,6 +24,10 @@ async function getBackgroundRemovalPipeline(onProgress) {
   return backgroundRemovalPipelinePromise;
 }
 
+export async function prewarmTransformersEngine(onProgress) {
+  await getBackgroundRemovalPipeline(onProgress);
+}
+
 function rawImageToBlob(rawImage) {
   const canvas = document.createElement("canvas");
   canvas.width = rawImage.width;

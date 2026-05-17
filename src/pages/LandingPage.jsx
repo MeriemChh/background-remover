@@ -1,7 +1,57 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { prewarmTransformersEngine } from "../features/background-remover/services/transformersEngine";
 import "../shared/styles/landing.css";
 
 export default function LandingPage() {
+  const showcaseItems = [
+    { key: "initial", step: "1. Original Upload", src: "/initial.JPG", alt: "Original image before background removal" },
+    { key: "ai", step: "2. AI Processed", src: "/ai-result.png", alt: "Image after AI background removal" },
+    { key: "final", step: "3. Manual Refinement", src: "/final-result.png", alt: "Final image after manual refinement in SketchClean" },
+  ];
+  const [imagesLoaded, setImagesLoaded] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+    const toastId = "model-warmup";
+    toast.loading("Warming up local AI models...", { toastId, autoClose: false });
+
+    prewarmTransformersEngine(progress => {
+      if (!mounted) return;
+      if (typeof progress === "number") {
+        const p = Math.max(0, Math.min(100, Math.round(progress)));
+        toast.update(toastId, {
+          isLoading: true,
+          autoClose: false,
+          render: `Warming up local AI models... ${p}%`,
+        });
+      }
+    })
+      .then(() => {
+        if (!mounted) return;
+        toast.update(toastId, {
+          isLoading: false,
+          type: "success",
+          autoClose: 2200,
+          render: "Local AI models are ready. You can start instantly.",
+        });
+      })
+      .catch(() => {
+        if (!mounted) return;
+        toast.update(toastId, {
+          isLoading: false,
+          type: "warning",
+          autoClose: 3200,
+          render: "Model warm-up failed. App still works when you start processing.",
+        });
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <main className="landing-page">
       <section className="landing-shell">
@@ -57,18 +107,24 @@ export default function LandingPage() {
         <section className="landing-showcase" aria-label="Background removal example workflow">
           <h2>See The Workflow</h2>
           <div className="landing-showcase-grid">
-            <article>
-              <p>1. Original Upload</p>
-              <img src="/initial.JPG" alt="Original image before background removal" loading="lazy" />
-            </article>
-            <article>
-              <p>2. AI Processed</p>
-              <img src="/ai-result.png" alt="Image after AI background removal" loading="lazy" />
-            </article>
-            <article>
-              <p>3. Manual Refinement</p>
-              <img src="/final-result.png" alt="Final image after manual refinement in SketchClean" loading="lazy" />
-            </article>
+            {showcaseItems.map(item => (
+              <article key={item.key}>
+                <p>{item.step}</p>
+                <div className="landing-showcase-image-wrap">
+                  {!imagesLoaded[item.key] && (
+                    <div className="landing-image-loader">
+                      <div className="landing-image-spinner" />
+                    </div>
+                  )}
+                  <img
+                    src={item.src}
+                    alt={item.alt}
+                    loading="lazy"
+                    onLoad={() => setImagesLoaded(prev => ({ ...prev, [item.key]: true }))}
+                  />
+                </div>
+              </article>
+            ))}
           </div>
         </section>
 
