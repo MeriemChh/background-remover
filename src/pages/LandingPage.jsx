@@ -15,26 +15,19 @@ export default function LandingPage() {
   useEffect(() => {
     let mounted = true;
     const toastId = "model-warmup";
-    toast.loading("Warming up local AI models...", { toastId, autoClose: false });
+    toast.loading(
+      "Warming up local AI models. First time on this device may take longer; next visits are usually faster.",
+      { toastId, autoClose: false },
+    );
 
-    prewarmTransformersEngine(progress => {
-      if (!mounted) return;
-      if (typeof progress === "number") {
-        const p = Math.max(0, Math.min(100, Math.round(progress)));
-        toast.update(toastId, {
-          isLoading: true,
-          autoClose: false,
-          render: `Warming up local AI models... ${p}%`,
-        });
-      }
-    })
+    prewarmTransformersEngine(() => {})
       .then(() => {
         if (!mounted) return;
         toast.update(toastId, {
           isLoading: false,
           type: "success",
           autoClose: 2200,
-          render: "Local AI models are ready. You can start instantly.",
+          render: "Local AI models are ready. You can start editing.",
         });
       })
       .catch(() => {
