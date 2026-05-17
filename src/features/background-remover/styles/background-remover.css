@@ -11,7 +11,8 @@
 }
 
 .app-container {
-  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
   background:
     radial-gradient(600px 260px at 50% -6%, rgba(255, 255, 255, 0.08), transparent),
     var(--bg);
@@ -22,7 +23,7 @@
 }
 
 .toolbar-top {
-  height: 60px;
+  min-height: 60px;
   background: rgba(10, 10, 10, 0.92);
   border-bottom: 1px solid var(--border);
   display: grid;
@@ -81,6 +82,7 @@
 .nav-right {
   display: flex;
   gap: 10px;
+  justify-content: flex-end;
 }
 
 .btn-upload,
@@ -94,6 +96,7 @@
   font-weight: 700;
   letter-spacing: 0.01em;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .btn-upload {
@@ -174,6 +177,7 @@
   justify-content: center;
   align-items: center;
   touch-action: none;
+  padding: 12px;
 }
 
 .canvas-move-layer {
@@ -231,15 +235,94 @@ canvas {
     flex-direction: column;
   }
 
+  .toolbar-top {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand actions"
+      "history history";
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .nav-left {
+    grid-area: brand;
+  }
+
+  .history-btns.center {
+    grid-area: history;
+    justify-content: flex-start;
+  }
+
+  .nav-right {
+    grid-area: actions;
+  }
+
+  .history-btns button {
+    padding: 9px 12px;
+  }
+
+  .btn-upload,
+  .btn-export {
+    padding: 9px 12px;
+    font-size: 0.8rem;
+  }
+
   .tool-sidebar {
     width: 100%;
     flex-direction: row;
     overflow-x: auto;
     border-right: none;
     border-top: 1px solid var(--border);
+    padding: 12px 10px;
+    gap: 12px;
+    scroll-snap-type: x mandatory;
   }
 
   .tool-section {
     min-width: 170px;
+    scroll-snap-align: start;
+  }
+
+  .canvas-viewport {
+    min-height: 45dvh;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .toolbar-top {
+    padding-top: max(8px, env(safe-area-inset-top));
+  }
+
+  .brand {
+    font-size: 0.95rem;
+  }
+
+  .brand-logo {
+    width: 18px;
+    height: 18px;
+  }
+
+  .btn-upload,
+  .btn-export {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  .btn-upload svg,
+  .btn-export svg {
+    font-size: 1rem;
+  }
+
+  .tool-sidebar {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .tool-section {
+    min-width: 150px;
+  }
+
+  .section-label {
+    font-size: 0.62rem;
   }
 }

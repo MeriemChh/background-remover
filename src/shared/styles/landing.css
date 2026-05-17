@@ -162,3 +162,48 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) {
+  .landing-page {
+    padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+  }
+
+  .landing-shell {
+    border-radius: 18px;
+    padding: 18px;
+  }
+
+  .landing-header {
+    margin-bottom: 22px;
+  }
+
+  .landing-header a {
+    font-size: 0.82rem;
+    padding: 7px 11px;
+  }
+
+  .landing-hero h1 {
+    font-size: clamp(1.7rem, 9vw, 2.4rem);
+    line-height: 1.1;
+  }
+
+  .landing-hero p {
+    font-size: 0.96rem;
+  }
+
+  .landing-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .landing-primary-link,
+  .landing-secondary-link {
+    text-align: center;
+    width: 100%;
+    padding: 13px 14px;
+  }
+
+  .landing-grid article {
+    padding: 14px;
+  }
+}
