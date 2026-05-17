@@ -21,6 +21,7 @@ export default function BackgroundRemover() {
   const [progress, setProgress] = useState(0);
   const [processedImage, setProcessedImage] = useState(null);
   const [originalImage, setOriginalImage] = useState(null);
+  const [sourceFileName, setSourceFileName] = useState("sketchclean-export");
 
   // Tools & Navigation
   const [mode, setMode] = useState("erase");
@@ -58,6 +59,8 @@ export default function BackgroundRemover() {
   const handleProcessImage = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const baseName = file.name.replace(/\.[^/.]+$/, "") || "sketchclean-export";
+    setSourceFileName(baseName);
     setLoading(true);
     setProgress(0);
     try {
@@ -215,6 +218,16 @@ export default function BackgroundRemover() {
     lastPinchDistance.current = null;
   };
 
+  const handleExport = () => {
+    if (!canvasRef.current) return;
+    const link = document.createElement("a");
+    link.href = canvasRef.current.toDataURL("image/png");
+    link.download = `${sourceFileName}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="app-container">
         <nav className="toolbar-top">
@@ -237,7 +250,7 @@ export default function BackgroundRemover() {
               <input type="file" onChange={handleProcessImage} hidden />
             </label>
 
-            <button className="btn-export">
+            <button className="btn-export" onClick={handleExport} disabled={!processedImage}>
               <FiDownload /> Export
             </button>
           </div>
