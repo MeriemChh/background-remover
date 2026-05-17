@@ -1,5 +1,6 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LandingPage from "../pages/LandingPage";
+import NotFoundPage from "../pages/NotFoundPage";
 import WorkspacePage from "../pages/WorkspacePage";
 
 export default function App() {
@@ -8,7 +9,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/workspace" element={<WorkspacePage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
