@@ -131,6 +131,11 @@
   margin-bottom: 8px;
   font-weight: 700;
 }
+.tool-section{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;  
+}
 
 .tool-section button {
   width: 100%;
