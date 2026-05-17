@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { removeImageBackground } from "../services/removeBackground";
+import { ENGINE_OPTIONS, getAlternateEngineId } from "../services/engineOptions";
+import { removeImageBackground } from "../services/imglyEngine";
+import { removeImageBackgroundWithTransformers } from "../services/transformersEngine";
 import "../styles/background-remover.css";
 import {
   FiRotateCcw,
@@ -23,6 +25,29 @@ export default function BackgroundRemover() {
   const [processedImage, setProcessedImage] = useState(null);
   const [originalImage, setOriginalImage] = useState(null);
   const [sourceFileName, setSourceFileName] = useState("sketchclean-export");
+  const [engine, setEngine] = useState(ENGINE_OPTIONS.transformers.id);
+  const [engineError, setEngineError] = useState("");
+  const [showEnginePanel, setShowEnginePanel] = useState(false);
+  const progressRef = useRef(0);
+
+  const isHeicFile = (file) => {
+    const lowerName = file.name.toLowerCase();
+    const mime = (file.type || "").toLowerCase();
+    return (
+      lowerName.endsWith(".heic") ||
+      lowerName.endsWith(".heif") ||
+      mime.includes("heic") ||
+      mime.includes("heif")
+    );
+  };
+
+  const getReadableError = (file, engineId) => {
+    if (isHeicFile(file)) {
+      return "HEIC/HEIF is not supported in this browser flow yet. Please convert your file to PNG or JPG and try again.";
+    }
+    const alternateEngine = ENGINE_OPTIONS[getAlternateEngineId(engineId)];
+    return `Processing failed for this file. Try switching to ${alternateEngine.label}. If it still fails, use PNG or JPG format.`;
+  };
 
   // Tools & Navigation
   const [mode, setMode] = useState("erase");
@@ -60,15 +85,37 @@ export default function BackgroundRemover() {
   const handleProcessImage = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (isHeicFile(file)) {
+      setEngineError("HEIC/HEIF is not supported in this browser flow yet. Please convert your file to PNG or JPG and try again.");
+      e.target.value = "";
+      return;
+    }
     const baseName = file.name.replace(/\.[^/.]+$/, "") || "sketchclean-export";
     setSourceFileName(baseName);
     setLoading(true);
+    progressRef.current = 0;
     setProgress(0);
+    setEngineError("");
     try {
-      const blob = await removeImageBackground(file, setProgress);
+      const updateProgress = (value) => {
+        const normalized = Number.isFinite(value) ? Math.round(value) : 0;
+        const clamped = Math.max(0, Math.min(100, normalized));
+        const monotonic = Math.max(progressRef.current, clamped);
+        progressRef.current = monotonic;
+        setProgress(monotonic);
+      };
+
+      const processWithEngine = engine === ENGINE_OPTIONS.transformers.id
+        ? removeImageBackgroundWithTransformers
+        : removeImageBackground;
+
+      const blob = await processWithEngine(file, updateProgress);
+      updateProgress(100);
       setOriginalImage(URL.createObjectURL(file));
       setProcessedImage(URL.createObjectURL(blob));
-    } catch (err) { alert("AI Failed"); } finally { setLoading(false); }
+    } catch {
+      setEngineError(getReadableError(file, engine));
+    } finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -249,6 +296,13 @@ export default function BackgroundRemover() {
           </div>
 
           <div className="nav-right">
+            <button
+              type="button"
+              className="btn-mode-toggle"
+              onClick={() => setShowEnginePanel(prev => !prev)}
+            >
+              Mode
+            </button>
             <label className="btn-upload">
               <FiUpload /> New
               <input type="file" onChange={handleProcessImage} hidden />
@@ -260,9 +314,42 @@ export default function BackgroundRemover() {
           </div>
         </nav>
 
+      <section className="engine-selector" aria-label="Background removal engine">
+        <p className="engine-current">Processing Mode: {ENGINE_OPTIONS[engine].label}</p>
+        <div className={`engine-selector-body ${showEnginePanel ? "open" : ""}`}>
+          <div className="engine-selector-grid">
+            {Object.values(ENGINE_OPTIONS).map(option => (
+              <button
+                key={option.id}
+                type="button"
+                className={`engine-option ${engine === option.id ? "active" : ""}`}
+                onClick={() => setEngine(option.id)}
+              >
+                <span className="engine-option-title">{option.label}</span>
+                <span className="engine-option-badge">{option.badge}</span>
+                <span className="engine-option-description">{option.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        {engineError && <p className="engine-error">{engineError}</p>}
+      </section>
+
 
       {loading && (
-        <div className="ai-loader"><div className="spinner"></div><p>AI working... {progress}%</p></div>
+        <div className="ai-loader">
+          <div className="spinner"></div>
+          <p className="ai-loader-title">Preparing your cutout with local AI</p>
+          <p className="ai-loader-subtitle">
+            {engine === ENGINE_OPTIONS.transformers.id
+              ? "Transformers Engine is processing in your browser."
+              : "IMG.LY fallback engine is processing in your browser."}
+          </p>
+          <div className="ai-progress-track" aria-label="AI processing progress">
+            <div className="ai-progress-fill" style={{ width: `${progress}%` }} />
+          </div>
+          <p className="ai-progress-text">{progress}%</p>
+        </div>
       )}
 
       {processedImage && (

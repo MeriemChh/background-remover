@@ -7,21 +7,35 @@ This repository is organized for clarity and open-source collaboration: a clean 
 ## Live App Flow
 
 - `/`: landing page (project context + entry point)
-- `/workspace`: editing workspace (existing app UI/behavior)
+- `/workspace`: editing workspace
 
 ## Features
 
-- AI background removal via `@imgly/background-removal`
+- Two fully local AI background removal engines:
+  - `Transformers Engine (Default)` powered by `@huggingface/transformers` with `Xenova/modnet`
+  - `IMG.LY Engine (Fallback)` powered by `@imgly/background-removal`
+- Engine selector in UI before processing
+- Stable progress loader (0-100, no backwards regression)
 - Manual erase/restore brush tools
 - Pan + zoom canvas workflow
 - Undo/redo edit history
-- Fully front-end, no server upload required
+- Frontend-only processing, no app backend uploads required
+
+## Why Two Engines?
+
+Different browsers and devices can behave very differently with in-browser ML runtimes.
+
+- We use **Transformers.js as the primary engine** because it gives strong local performance for many users and aligns with a modern open-source browser AI stack.
+- We keep **IMG.LY as a fallback engine** because compatibility matters, and a second independent implementation improves reliability when one engine fails on a specific device.
+
+If one engine fails, the app shows a friendly message suggesting a switch to the other local engine.
 
 ## Tech Stack
 
 - React + Vite
 - React Router
 - Canvas 2D API
+- `@huggingface/transformers`
 - `@imgly/background-removal`
 
 ## Project Structure
@@ -29,22 +43,26 @@ This repository is organized for clarity and open-source collaboration: a clean 
 ```text
 src/
   app/
-    App.jsx                # routing + app shell
-    global.css             # global reset/base styles
+    App.jsx
+    global.css
   pages/
-    LandingPage.jsx        # recruiter/open-source intro page
-    WorkspacePage.jsx      # workspace route entry
+    LandingPage.jsx
+    NotFoundPage.jsx
+    WorkspacePage.jsx
   features/
     background-remover/
       components/
         BackgroundRemover.jsx
       services/
-        removeBackground.js
+        engineOptions.js
+        imglyEngine.js
+        transformersEngine.js
       styles/
         background-remover.css
   shared/
     styles/
       landing.css
+      not-found.css
   main.jsx
 ```
 

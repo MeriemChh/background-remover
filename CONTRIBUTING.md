@@ -11,6 +11,9 @@
 - Keep route-level files in `src/pages`.
 - Keep feature logic inside `src/features/<feature-name>`.
 - Keep service wrappers in each feature's `services` folder.
+- Preserve dual-engine behavior:
+  - Transformers engine is the default path.
+  - IMG.LY engine remains available as fallback.
 - Prefer small, focused PRs with clear commit messages.
 
 ## Pull Request Checklist
