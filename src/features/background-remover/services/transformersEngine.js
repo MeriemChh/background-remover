@@ -1,6 +1,7 @@
 import { env, pipeline } from "@huggingface/transformers";
 
 let backgroundRemovalPipelinePromise;
+const TRANSFORMERS_TIMEOUT_MS = 120000;
 
 function configureTransformersEnv() {
   env.allowLocalModels = false;
@@ -41,7 +42,18 @@ function rawImageToBlob(rawImage) {
 
 export async function removeImageBackgroundWithTransformers(file, onProgress) {
   const removeBackground = await getBackgroundRemovalPipeline(onProgress);
-  const rawImageResult = await removeBackground(file);
+  const rawImageResult = await Promise.race([
+    removeBackground(file),
+    new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(
+          new Error(
+            "Transformers engine timed out on this device/browser. Please switch to IMG.LY fallback engine.",
+          ),
+        );
+      }, TRANSFORMERS_TIMEOUT_MS);
+    }),
+  ]);
 
   const blob = await rawImageToBlob(rawImageResult);
   if (!blob) {

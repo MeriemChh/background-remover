@@ -100,7 +100,9 @@ export default function BackgroundRemover() {
       const updateProgress = (value) => {
         const normalized = Number.isFinite(value) ? Math.round(value) : 0;
         const clamped = Math.max(0, Math.min(100, normalized));
-        const monotonic = Math.max(progressRef.current, clamped);
+        // Keep loader honest: reserve 100% for true completion only.
+        const displayValue = Math.min(clamped, 95);
+        const monotonic = Math.max(progressRef.current, displayValue);
         progressRef.current = monotonic;
         setProgress(monotonic);
       };
