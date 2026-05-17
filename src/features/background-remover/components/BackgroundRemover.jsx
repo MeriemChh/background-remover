@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { removeImageBackground } from "../services/removeBackground";
 import "../styles/background-remover.css";
 import {
@@ -232,7 +233,10 @@ export default function BackgroundRemover() {
     <div className="app-container">
         <nav className="toolbar-top">
           <div className="nav-left">
-            <div className="brand">SketchClean</div>
+            <Link to="/" className="brand brand-link">
+              <img src="/icon.webp" alt="SketchClean logo" className="brand-logo" />
+              <span>SketchClean</span>
+            </Link>
           </div>
 
           <div className="history-btns center">
